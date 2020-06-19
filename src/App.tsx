@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Map, TileLayer, Marker, Popup } from "react-leaflet";
+import { Map, TileLayer, Marker, Popup, Polyline } from "react-leaflet";
 import "./App.css";
 import { LeafletMouseEvent, LatLng } from "leaflet";
 
@@ -20,6 +20,16 @@ const App = () => {
   );
   const markers = positions.map(marker);
 
+  const lines = positions.map((position) => {
+    return positions
+      .filter((position1) => position != position1)
+      .map((position1) => (
+        <Polyline positions={[position, position1]}></Polyline>
+      ));
+  });
+
+  console.log(lines);
+
   return (
     <Map center={center} zoom={13} onClick={onClick}>
       <TileLayer
@@ -27,6 +37,7 @@ const App = () => {
         url="https://{s}.tile.osm.org/{z}/{x}/{y}.png"
       />
       {markers}
+      {lines}
     </Map>
   );
 };
