@@ -6,12 +6,19 @@ import { LeafletMouseEvent, LatLng } from "leaflet";
 const App = () => {
   const center = new LatLng(33.448, -112.074);
 
-  const [position, setPosition] = useState<LatLng>(center);
+  const [positions, setPositions] = useState<LatLng[]>([]);
 
   const onClick = (event: LeafletMouseEvent): void => {
     const { latlng } = event;
-    setPosition(latlng);
+    setPositions(positions.concat(latlng));
   };
+
+  const marker = (position: LatLng) => (
+    <Marker position={position}>
+      <Popup>This is {position.toString()}</Popup>
+    </Marker>
+  );
+  const markers = positions.map(marker);
 
   return (
     <Map center={center} zoom={13} onClick={onClick}>
@@ -19,9 +26,7 @@ const App = () => {
         attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
         url="https://{s}.tile.osm.org/{z}/{x}/{y}.png"
       />
-      <Marker position={position}>
-        <Popup>This is {position.toString()}</Popup>
-      </Marker>
+      {markers}
     </Map>
   );
 };
