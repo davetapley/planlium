@@ -11,6 +11,7 @@
     "@types/react": "^16.9.38",
     "@types/react-dom": "^16.9.8",
     "@types/react-leaflet": "^2.5.1",
+    "bulma": "^0.8.2",
     "i": "^0.3.6",
     "leaflet": "^1.6.0",
     "npm": "^6.14.5",
@@ -18,6 +19,7 @@
     "react-dom": "^16.13.1",
     "react-leaflet": "^2.7.0",
     "react-scripts": "3.4.1",
+    "trunx": "^0.32.1",
     "typescript": "^3.7.5"
   },
   "scripts": {
