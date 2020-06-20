@@ -1,7 +1,7 @@
+import "./App.css";
 import "bulma/css/bulma.css";
 import React, { useState, useRef, useEffect } from "react";
 import { Map, TileLayer, Marker, Popup, Polyline } from "react-leaflet";
-import "./App.css";
 import { LeafletMouseEvent, LatLng } from "leaflet";
 import { uniqueNamesGenerator } from "unique-names-generator";
 
