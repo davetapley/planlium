@@ -15,6 +15,10 @@ import {
   Field,
   Label,
   Button,
+  Hero,
+  Title,
+  Container,
+  Subtitle,
 } from "trunx";
 
 const perms = (n: number): number[][] => {
@@ -113,7 +117,7 @@ const Controls = ({
 type Hub = { name: string; position: LatLng };
 
 const hubName = () =>
-  uniqueNamesGenerator({ separator: " ", style: "capital" });
+  uniqueNamesGenerator({ separator: " ", style: "capital", length: 2 });
 
 const hubPositions = (hubs: Hub[]) => hubs.map(({ position }) => position);
 
@@ -155,24 +159,34 @@ const App = () => {
   });
 
   return (
-    <Section>
-      <Columns>
-        <Column>
-          <Map center={center} zoom={13} onClick={onClick}>
-            <TileLayer
-              attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
-              url="https://{s}.tile.osm.org/{z}/{x}/{y}.png"
-            />
-            {markers}
-            {lines}
-          </Map>
-        </Column>
-        <Column isOneFifth={true}>
-          <Controls range={range} setRange={setRange} />
-          <Hubs hubs={hubs}></Hubs>
-        </Column>
-      </Columns>
-    </Section>
+    <>
+      <Section isMarginLess isPaddingLess>
+        <Container>
+          <Title>Helium Hub planner</Title>
+          <Subtitle>Map name here</Subtitle>
+        </Container>
+      </Section>
+      <Section>
+        <Container>
+          <Columns>
+            <Column>
+              <Map center={center} zoom={15} onClick={onClick}>
+                <TileLayer
+                  attribution='&copy; <a href="https://stadiamaps.com/">Stadia Maps</a>, &copy; <a href="https://openmaptiles.org/">OpenMapTiles</a> &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors'
+                  url="https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png"
+                />
+                {markers}
+                {lines}
+              </Map>
+            </Column>
+            <Column isOneFifth={true}>
+              <Controls range={range} setRange={setRange} />
+              <Hubs hubs={hubs}></Hubs>
+            </Column>
+          </Columns>
+        </Container>
+      </Section>
+    </>
   );
 };
 
