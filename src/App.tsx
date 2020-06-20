@@ -1,6 +1,6 @@
 import "./App.css";
 import "bulma/css/bulma.css";
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, ReactNode } from "react";
 import { Map, TileLayer, Marker, Popup, Polyline } from "react-leaflet";
 import { LeafletMouseEvent, LatLng } from "leaflet";
 import { uniqueNamesGenerator } from "unique-names-generator";
@@ -124,14 +124,16 @@ type Hub = { name: string; position: LatLng; selected: boolean };
 type HubMarkerProps = {
   range: number;
   positions: LatLng[];
+  popup: ReactNode;
   position: LatLng;
   selected: boolean;
 };
 
 const HubMarker = ({
   range,
-  position,
   positions,
+  popup,
+  position,
   selected,
 }: HubMarkerProps) => {
   // Some ref magic to call openPopup and closePopup
@@ -154,9 +156,7 @@ const HubMarker = ({
       opacity={markerOpacity(range, positions, position)}
     >
       <Popup autoClose={false} auto>
-        This is {position.toString()}
-        {"     "}
-        {markerOpacity(range, positions, position)}
+        {popup}
       </Popup>
     </Marker>
   );
@@ -186,6 +186,7 @@ const App = () => {
       key={name}
       range={range}
       positions={positions}
+      popup={<p>{name}</p>}
       position={position}
       selected={selected}
     ></HubMarker>
