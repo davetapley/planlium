@@ -1,5 +1,6 @@
-import "./App.css";
 import "bulma/css/bulma.css";
+import "./App.css";
+import classNames from "classnames";
 import React, { useState, useRef, useEffect, ReactNode } from "react";
 import { Map, TileLayer, Marker, Popup, Polyline } from "react-leaflet";
 import { LeafletMouseEvent, LatLng } from "leaflet";
@@ -78,16 +79,17 @@ const markerOpacity = (
 
 const Hubs = ({
   hubs,
-  selected,
+  selected: setSelected,
 }: {
   hubs: Hub[];
   selected: (name: string, selected: boolean) => void;
 }) => {
-  const rows = hubs.map(({ name }) => (
+  const rows = hubs.map(({ name, selected }) => (
     <div
       key={name}
-      onMouseOver={() => selected(name, true)}
-      onMouseLeave={() => selected(name, false)}
+      onMouseOver={() => setSelected(name, true)}
+      onMouseLeave={() => setSelected(name, false)}
+      className={classNames({ active: selected })}
     >
       <Panel.Block>
         <Panel.Icon>
@@ -127,6 +129,8 @@ type HubMarkerProps = {
   popup: ReactNode;
   position: LatLng;
   selected: boolean;
+  onMouseOver: () => void;
+  onMouseLeave: () => void;
 };
 
 const HubMarker = ({
@@ -135,6 +139,8 @@ const HubMarker = ({
   popup,
   position,
   selected,
+  onMouseOver,
+  onMouseLeave,
 }: HubMarkerProps) => {
   // Some ref magic to call openPopup and closePopup
   const markerRef = useRef<Marker | null>(null);
@@ -154,6 +160,8 @@ const HubMarker = ({
       ref={markerRef}
       position={position}
       opacity={markerOpacity(range, positions, position)}
+      onmouseover={onMouseOver}
+      onmouseout={onMouseLeave}
     >
       <Popup autoClose={false} auto>
         {popup}
@@ -179,6 +187,13 @@ const App = () => {
       hubs.concat({ name: hubName(), position: latlng, selected: false })
     );
   };
+  const setSelected = (name_: string, selected_: boolean) => {
+    setHubs(
+      hubs.map((hub) =>
+        hub.name === name_ ? { ...hub, selected: selected_ } : hub
+      )
+    );
+  };
 
   const positions = hubPositions(hubs);
   const markers = hubs.map(({ name, position, selected }) => (
@@ -189,6 +204,8 @@ const App = () => {
       popup={<p>{name}</p>}
       position={position}
       selected={selected}
+      onMouseOver={() => setSelected(name, true)}
+      onMouseLeave={() => setSelected(name, false)}
     ></HubMarker>
   ));
 
@@ -203,14 +220,6 @@ const App = () => {
       ></Polyline>
     );
   });
-
-  const selected = (name_: string, selected_: boolean) => {
-    setHubs(
-      hubs.map((hub) =>
-        hub.name === name_ ? { ...hub, selected: selected_ } : hub
-      )
-    );
-  };
 
   return (
     <>
@@ -235,7 +244,7 @@ const App = () => {
             </Column>
             <Column isOneFifth={true}>
               <Controls range={range} setRange={setRange} />
-              <Hubs hubs={hubs} selected={selected}></Hubs>
+              <Hubs hubs={hubs} selected={setSelected}></Hubs>
             </Column>
           </Columns>
         </Container>

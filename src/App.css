@@ -2,3 +2,10 @@
   height: 600px;
   width: 100%;
 }
+
+.active a.panel-block {
+  /*https://github.com/jenil/bulmaswatch/blob/9f392634ff8d6c1fda1fcbabcea28b9f4dd115f4/slate/_variables.scss#L50*/
+  color: #fafafa;
+  /*https://github.com/jenil/bulmaswatch/blob/9f392634ff8d6c1fda1fcbabcea28b9f4dd115f4/slate/_variables.scss#L7*/
+  background-color: #3a3f44;
+}
