@@ -1,5 +1,5 @@
 import "bulma/css/bulma.css";
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Map, TileLayer, Marker, Popup, Polyline } from "react-leaflet";
 import "./App.css";
 import { LeafletMouseEvent, LatLng } from "leaflet";
@@ -15,7 +15,6 @@ import {
   Field,
   Label,
   Button,
-  Hero,
   Title,
   Container,
   Subtitle,
@@ -66,9 +65,7 @@ const lineOpacity = (maxRange: number, x: LatLng, y: LatLng): number => {
     return 0;
   } else {
     const raw = 1 - (distance - minRange) / (maxRange - minRange);
-    const o = Math.max(0, Math.min(1, raw));
-    console.log(o);
-    return o;
+    return Math.max(0, Math.min(1, raw));
   }
 };
 
@@ -83,14 +80,26 @@ const markerOpacity = (
   return 0.5 + sum / positions.length;
 };
 
-const Hubs = ({ hubs }: { hubs: Hub[] }) => {
-  const rows = hubs.map((hub) => (
-    <Panel.Block>
-      <Panel.Icon>
-        <i className="fas fa-map-marker"></i>
-      </Panel.Icon>
-      {hub.name}
-    </Panel.Block>
+const Hubs = ({
+  hubs,
+  selected,
+}: {
+  hubs: Hub[];
+  selected: (name: string, selected: boolean) => void;
+}) => {
+  const rows = hubs.map(({ name }) => (
+    <div
+      key={name}
+      onMouseOver={() => selected(name, true)}
+      onMouseLeave={() => selected(name, false)}
+    >
+      <Panel.Block>
+        <Panel.Icon>
+          <i className="fas fa-map-marker"></i>
+        </Panel.Icon>
+        {name}
+      </Panel.Block>
+    </div>
   ));
   return (
     <Panel>
@@ -114,12 +123,53 @@ const Controls = ({
   </Panel>
 );
 
-type Hub = { name: string; position: LatLng };
+type Hub = { name: string; position: LatLng; selected: boolean };
+
+type HubMarkerProps = {
+  range: number;
+  positions: LatLng[];
+  position: LatLng;
+  selected: boolean;
+};
+
+const HubMarker = ({
+  range,
+  position,
+  positions,
+  selected,
+}: HubMarkerProps) => {
+  // Some ref magic to call openPopup and closePopup
+  const markerRef = useRef<Marker | null>(null);
+
+  // Without useEffect you get:
+  //   Warning: Cannot update during an existing state transition (such as within `render`).
+  //   Render methods should be a pure function of props and state.
+  useEffect(() => {
+    if (markerRef.current) {
+      const { leafletElement } = markerRef.current;
+      selected ? leafletElement.openPopup() : leafletElement.closePopup();
+    }
+  }, [markerRef, selected]);
+
+  return (
+    <Marker
+      ref={markerRef}
+      position={position}
+      opacity={markerOpacity(range, positions, position)}
+    >
+      <Popup autoClose={false} auto>
+        This is {position.toString()}
+        {"     "}
+        {markerOpacity(range, positions, position)}
+      </Popup>
+    </Marker>
+  );
+};
+
+const hubPositions = (hubs: Hub[]) => hubs.map(({ position }) => position);
 
 const hubName = () =>
   uniqueNamesGenerator({ separator: " ", style: "capital", length: 2 });
-
-const hubPositions = (hubs: Hub[]) => hubs.map(({ position }) => position);
 
 const App = () => {
   const center = new LatLng(33.448, -112.074);
@@ -129,34 +179,41 @@ const App = () => {
 
   const onClick = (event: LeafletMouseEvent): void => {
     const { latlng } = event;
-    setHubs(hubs.concat({ name: hubName(), position: latlng }));
+    setHubs(
+      hubs.concat({ name: hubName(), position: latlng, selected: false })
+    );
   };
 
   const positions = hubPositions(hubs);
-  const marker = (position: LatLng) => (
-    <Marker
+  const markers = hubs.map(({ name, position, selected }) => (
+    <HubMarker
+      key={name}
+      range={range}
+      positions={positions}
       position={position}
-      opacity={markerOpacity(range, positions, position)}
-    >
-      <Popup>
-        This is {position.toString()}
-        {"     "}
-        {markerOpacity(range, positions, position)}
-      </Popup>
-    </Marker>
-  );
-  const markers = positions.map(marker);
+      selected={selected}
+    ></HubMarker>
+  ));
 
   const lines = perms(positions.length).map(([x_, y_]) => {
     const x = positions[x_];
     const y = positions[y_];
     return (
       <Polyline
+        key={[x, y].toString()}
         positions={[x, y]}
         opacity={lineOpacity(range, x, y)}
       ></Polyline>
     );
   });
+
+  const selected = (name_: string, selected_: boolean) => {
+    setHubs(
+      hubs.map((hub) =>
+        hub.name === name_ ? { ...hub, selected: selected_ } : hub
+      )
+    );
+  };
 
   return (
     <>
@@ -181,7 +238,7 @@ const App = () => {
             </Column>
             <Column isOneFifth={true}>
               <Controls range={range} setRange={setRange} />
-              <Hubs hubs={hubs}></Hubs>
+              <Hubs hubs={hubs} selected={selected}></Hubs>
             </Column>
           </Columns>
         </Container>
