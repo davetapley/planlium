@@ -61,12 +61,8 @@ const Range = ({
 const lineOpacity = (maxRange: number, x: LatLng, y: LatLng): number => {
   const distance = x.distanceTo(y);
 
-  if (distance < minRange) {
-    return 0;
-  } else {
-    const raw = 1 - (distance - minRange) / (maxRange - minRange);
-    return Math.max(0, Math.min(1, raw));
-  }
+  const raw = Math.max(0, distance - minRange) / (maxRange - minRange);
+  return 1 - Math.min(1, raw);
 };
 
 const markerOpacity = (
