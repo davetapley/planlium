@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { Map, TileLayer, Marker, Popup, Polyline } from "react-leaflet";
 import "./App.css";
 import { LeafletMouseEvent, LatLng } from "leaflet";
+import { uniqueNamesGenerator } from "unique-names-generator";
 
 import {
   Control,
@@ -11,7 +12,6 @@ import {
   Columns,
   Column,
   Section,
-  Icon,
   Field,
   Label,
   Button,
@@ -37,37 +37,64 @@ const Range = ({
   setRange: (n: number) => void;
 }) => {
   return (
-    <Field isHorizontal hasAddons>
-      <Field.Label>
-        <Label>Max Range</Label>
-      </Field.Label>
-      <Field.Body>
-        <Control hasIconsLeft>
-          <Input
-            type="number"
-            step={100}
-            min={minRange}
-            value={range}
-            onChange={(e) => setRange(parseInt(e.target.value))}
-          ></Input>
-          <Icon isLeft>
-            <i aria-hidden="true" className="fas fa-ruler"></i>
-          </Icon>
-        </Control>
-        <Control>
-          <Button isStatic>meters</Button>
-        </Control>
-      </Field.Body>
+    <Field hasAddons>
+      <Label>Max Range</Label>
+      <Control>
+        <Input
+          type="number"
+          step={100}
+          min={minRange}
+          value={range}
+          onChange={(e) => setRange(parseInt(e.target.value))}
+        ></Input>
+      </Control>
+      <Control>
+        <Button isStatic>m</Button>
+      </Control>
     </Field>
   );
 };
 
-const opacity = (maxRange: number, x: LatLng, y: LatLng): number => {
+const lineOpacity = (maxRange: number, x: LatLng, y: LatLng): number => {
   const distance = x.distanceTo(y);
 
-  return 1 - (distance - minRange) / (maxRange - minRange);
+  if (distance < minRange) {
+    return 0;
+  } else {
+    const raw = 1 - (distance - minRange) / (maxRange - minRange);
+    const o = Math.max(0, Math.min(1, raw));
+    console.log(o);
+    return o;
+  }
 };
 
+const markerOpacity = (
+  maxRange: number,
+  positions: LatLng[],
+  position: LatLng
+): number => {
+  const sum = positions.reduce((prev, position_) => {
+    return prev + lineOpacity(maxRange, position, position_);
+  }, 0);
+  return 0.5 + sum / positions.length;
+};
+
+const Hubs = ({ hubs }: { hubs: Hub[] }) => {
+  const rows = hubs.map((hub) => (
+    <Panel.Block>
+      <Panel.Icon>
+        <i className="fas fa-map-marker"></i>
+      </Panel.Icon>
+      {hub.name}
+    </Panel.Block>
+  ));
+  return (
+    <Panel>
+      <Panel.Heading>Hubs</Panel.Heading>
+      {rows}
+    </Panel>
+  );
+};
 const Controls = ({
   range,
   setRange,
@@ -83,20 +110,35 @@ const Controls = ({
   </Panel>
 );
 
+type Hub = { name: string; position: LatLng };
+
+const hubName = () =>
+  uniqueNamesGenerator({ separator: " ", style: "capital" });
+
+const hubPositions = (hubs: Hub[]) => hubs.map(({ position }) => position);
+
 const App = () => {
   const center = new LatLng(33.448, -112.074);
 
   const [range, setRange] = useState<number>(3000);
-  const [positions, setPositions] = useState<LatLng[]>([]);
+  const [hubs, setHubs] = useState<Hub[]>([]);
 
   const onClick = (event: LeafletMouseEvent): void => {
     const { latlng } = event;
-    setPositions(positions.concat(latlng));
+    setHubs(hubs.concat({ name: hubName(), position: latlng }));
   };
 
+  const positions = hubPositions(hubs);
   const marker = (position: LatLng) => (
-    <Marker position={position}>
-      <Popup>This is {position.toString()}</Popup>
+    <Marker
+      position={position}
+      opacity={markerOpacity(range, positions, position)}
+    >
+      <Popup>
+        This is {position.toString()}
+        {"     "}
+        {markerOpacity(range, positions, position)}
+      </Popup>
     </Marker>
   );
   const markers = positions.map(marker);
@@ -105,16 +147,16 @@ const App = () => {
     const x = positions[x_];
     const y = positions[y_];
     return (
-      <Polyline positions={[x, y]} opacity={opacity(range, x, y)}></Polyline>
+      <Polyline
+        positions={[x, y]}
+        opacity={lineOpacity(range, x, y)}
+      ></Polyline>
     );
   });
 
   return (
     <Section>
       <Columns>
-        <Column isOneFifth={true}>
-          <Controls range={range} setRange={setRange} />
-        </Column>
         <Column>
           <Map center={center} zoom={13} onClick={onClick}>
             <TileLayer
@@ -124,6 +166,10 @@ const App = () => {
             {markers}
             {lines}
           </Map>
+        </Column>
+        <Column isOneFifth={true}>
+          <Controls range={range} setRange={setRange} />
+          <Hubs hubs={hubs}></Hubs>
         </Column>
       </Columns>
     </Section>

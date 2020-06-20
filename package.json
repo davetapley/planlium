@@ -20,7 +20,8 @@
     "react-leaflet": "^2.7.0",
     "react-scripts": "3.4.1",
     "trunx": "^0.32.1",
-    "typescript": "^3.7.5"
+    "typescript": "^3.7.5",
+    "unique-names-generator": "^3.1.1"
   },
   "scripts": {
     "start": "react-scripts start",
