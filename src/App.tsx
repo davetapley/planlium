@@ -77,70 +77,84 @@ const markerOpacity = (
   return 0.5 + sum / positions.length;
 };
 
-const NameInput = ({
-  name,
-  setName,
-}: {
+const NameInput = (props: {
   name: string;
-  setName: (name_: string) => void;
-}) => (
-  <Field>
-    <Control>
-      <Input
-        type="text"
-        autoFocus
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-      ></Input>
-    </Control>
-  </Field>
-);
+  setName: (name: string) => void;
+  onSubmit: () => void;
+}) => {
+  return (
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        props.onSubmit();
+      }}
+    >
+      <Field>
+        <Control>
+          <Input
+            type="text"
+            autoFocus
+            value={name}
+            onChange={(e) => props.setName(e.target.value)}
+          ></Input>
+        </Control>
+      </Field>
+    </form>
+  );
+};
 
 type HubSelectionState = "None" | "Active" | "Editing";
 
-const HubList = ({
-  hubs,
-  setSelectionState,
-  setName,
-}: {
-  hubs: Hub[];
-  setSelectionState: (name: string, state: HubSelectionState) => void;
-  setName: (oldName: string, newName: string) => void;
+const HubListHub = (props: {
+  name: string;
+  state: String;
+  setState: (state: HubSelectionState) => void;
+  setName: (newName: string) => void;
 }) => {
-  const rows = hubs.map(({ name, selectionState }) => (
+  const { name, state, setState, setName } = props;
+  return (
     <div
       key={name}
-      onMouseOver={() =>
-        selectionState !== "Editing" && setSelectionState(name, "Active")
-      }
-      onMouseLeave={() => setSelectionState(name, "None")}
-      onClick={() => {
-        setSelectionState(name, "Editing");
-      }}
-      className={classNames({ active: selectionState === "Active" })}
+      onMouseOver={() => state !== "Editing" && setState("Active")}
+      onMouseLeave={() => setState("None")}
+      onClick={() => setState("Editing")}
+      className={classNames({ active: state === "Active" })}
     >
       <Panel.Block>
         <Panel.Icon>
           <i className="fas fa-map-marker"></i>
         </Panel.Icon>
-        {selectionState === "Editing" ? (
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              setSelectionState(name, "None");
-            }}
-          >
-            <NameInput
-              name={name}
-              setName={(name_) => setName(name, name_)}
-            ></NameInput>
-          </form>
+        {state === "Editing" ? (
+          <NameInput
+            name={name}
+            setName={setName}
+            onSubmit={() => setState("None")}
+          ></NameInput>
         ) : (
           name
         )}
       </Panel.Block>
     </div>
-  ));
+  );
+};
+
+const HubList = (props: {
+  hubs: Hub[];
+  setSelectionState: (name: string, state: HubSelectionState) => void;
+  setName: (oldName: string, newName: string) => void;
+}) => {
+  const { hubs, setSelectionState, setName } = props;
+  const rows = hubs.map((hub) => {
+    const { name, selectionState } = hub;
+    return (
+      <HubListHub
+        name={name}
+        state={selectionState}
+        setName={(newName) => setName(name, newName)}
+        setState={(newState) => setSelectionState(name, newState)}
+      ></HubListHub>
+    );
+  });
   return (
     <Panel>
       <Panel.Heading>Hubs</Panel.Heading>
