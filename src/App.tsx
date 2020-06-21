@@ -98,7 +98,7 @@ const NameInput = ({
 
 type HubSelectionState = "None" | "Active" | "Editing";
 
-const Hubs = ({
+const HubList = ({
   hubs,
   setSelectionState,
   setName,
@@ -297,11 +297,11 @@ const App = () => {
             </Column>
             <Column isOneFifth={true}>
               <Controls range={range} setRange={setRange} />
-              <Hubs
+              <HubList
                 hubs={hubs}
                 setName={setName}
                 setSelectionState={setSelectionState}
-              ></Hubs>
+              ></HubList>
             </Column>
           </Columns>
         </Container>
