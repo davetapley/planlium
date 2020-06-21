@@ -82,11 +82,12 @@ const NameInput = (props: {
   setName: (name: string) => void;
   onSubmit: () => void;
 }) => {
+  const { name, setName, onSubmit } = props;
   return (
     <form
       onSubmit={(e) => {
         e.preventDefault();
-        props.onSubmit();
+        onSubmit();
       }}
     >
       <Field>
@@ -95,7 +96,7 @@ const NameInput = (props: {
             type="text"
             autoFocus
             value={name}
-            onChange={(e) => props.setName(e.target.value)}
+            onChange={(e) => setName(e.target.value)}
           ></Input>
         </Control>
       </Field>
