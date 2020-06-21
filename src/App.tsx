@@ -77,25 +77,60 @@ const markerOpacity = (
   return 0.5 + sum / positions.length;
 };
 
+const NameInput = ({
+  name,
+  setName,
+}: {
+  name: string;
+  setName: (name_: string) => void;
+}) => (
+  <Field>
+    <Control>
+      <Input
+        type="text"
+        autoFocus
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+      ></Input>
+    </Control>
+  </Field>
+);
+
+type HubSelectionState = "None" | "Active" | "Editing";
+
 const Hubs = ({
   hubs,
-  selected: setSelected,
+  setSelectionState,
+  setName,
 }: {
   hubs: Hub[];
-  selected: (name: string, selected: boolean) => void;
+  setSelectionState: (name: string, state: HubSelectionState) => void;
+  setName: (oldName: string, newName: string) => void;
 }) => {
-  const rows = hubs.map(({ name, selected }) => (
+  const rows = hubs.map(({ name, selectionState }) => (
     <div
       key={name}
-      onMouseOver={() => setSelected(name, true)}
-      onMouseLeave={() => setSelected(name, false)}
-      className={classNames({ active: selected })}
+      onMouseOver={() =>
+        selectionState !== "Editing" && setSelectionState(name, "Active")
+      }
+      onMouseLeave={() => setSelectionState(name, "None")}
+      onClick={() => {
+        setSelectionState(name, "Editing");
+      }}
+      className={classNames({ active: selectionState === "Active" })}
     >
       <Panel.Block>
         <Panel.Icon>
           <i className="fas fa-map-marker"></i>
         </Panel.Icon>
-        {name}
+        {selectionState === "Editing" ? (
+          <NameInput
+            name={name}
+            setName={(name_) => setName(name, name_)}
+          ></NameInput>
+        ) : (
+          name
+        )}
       </Panel.Block>
     </div>
   ));
@@ -121,14 +156,18 @@ const Controls = ({
   </Panel>
 );
 
-type Hub = { name: string; position: LatLng; selected: boolean };
+type Hub = {
+  name: string;
+  position: LatLng;
+  selectionState: HubSelectionState;
+};
 
 type HubMarkerProps = {
   range: number;
   positions: LatLng[];
   popup: ReactNode;
   position: LatLng;
-  selected: boolean;
+  selectionState: HubSelectionState;
   onMouseOver: () => void;
   onMouseLeave: () => void;
 };
@@ -138,7 +177,7 @@ const HubMarker = ({
   positions,
   popup,
   position,
-  selected,
+  selectionState,
   onMouseOver,
   onMouseLeave,
 }: HubMarkerProps) => {
@@ -151,9 +190,16 @@ const HubMarker = ({
   useEffect(() => {
     if (markerRef.current) {
       const { leafletElement } = markerRef.current;
-      selected ? leafletElement.openPopup() : leafletElement.closePopup();
+      switch (selectionState) {
+        case "Active":
+          leafletElement.openPopup();
+          break;
+        default:
+          leafletElement.closePopup();
+          break;
+      }
     }
-  }, [markerRef, selected]);
+  }, [markerRef, selectionState]);
 
   return (
     <Marker
@@ -184,28 +230,35 @@ const App = () => {
   const onClick = (event: LeafletMouseEvent): void => {
     const { latlng } = event;
     setHubs(
-      hubs.concat({ name: hubName(), position: latlng, selected: false })
+      hubs.concat({ name: hubName(), position: latlng, selectionState: "None" })
     );
   };
-  const setSelected = (name_: string, selected_: boolean) => {
+  const setSelectionState = (name_: string, state_: HubSelectionState) => {
     setHubs(
       hubs.map((hub) =>
-        hub.name === name_ ? { ...hub, selected: selected_ } : hub
+        hub.name === name_ ? { ...hub, selectionState: state_ } : hub
+      )
+    );
+  };
+  const setName = (oldName: string, newName: string) => {
+    setHubs(
+      hubs.map((hub) =>
+        hub.name === oldName ? { ...hub, name: newName } : hub
       )
     );
   };
 
   const positions = hubPositions(hubs);
-  const markers = hubs.map(({ name, position, selected }) => (
+  const markers = hubs.map(({ name, position, selectionState }) => (
     <HubMarker
       key={name}
       range={range}
       positions={positions}
       popup={<p>{name}</p>}
       position={position}
-      selected={selected}
-      onMouseOver={() => setSelected(name, true)}
-      onMouseLeave={() => setSelected(name, false)}
+      selectionState={selectionState}
+      onMouseOver={() => setSelectionState(name, "Active")}
+      onMouseLeave={() => setSelectionState(name, "None")}
     ></HubMarker>
   ));
 
@@ -244,7 +297,11 @@ const App = () => {
             </Column>
             <Column isOneFifth={true}>
               <Controls range={range} setRange={setRange} />
-              <Hubs hubs={hubs} selected={setSelected}></Hubs>
+              <Hubs
+                hubs={hubs}
+                setName={setName}
+                setSelectionState={setSelectionState}
+              ></Hubs>
             </Column>
           </Columns>
         </Container>
