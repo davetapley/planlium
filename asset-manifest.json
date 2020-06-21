@@ -1,0 +1,25 @@
+{
+  "files": {
+    "main.css": "/planlium/static/css/main.a0ad9ee4.chunk.css",
+    "main.js": "/planlium/static/js/main.02d03bea.chunk.js",
+    "main.js.map": "/planlium/static/js/main.02d03bea.chunk.js.map",
+    "runtime-main.js": "/planlium/static/js/runtime-main.964326c2.js",
+    "runtime-main.js.map": "/planlium/static/js/runtime-main.964326c2.js.map",
+    "static/css/2.c3343ac3.chunk.css": "/planlium/static/css/2.c3343ac3.chunk.css",
+    "static/js/2.d5114b35.chunk.js": "/planlium/static/js/2.d5114b35.chunk.js",
+    "static/js/2.d5114b35.chunk.js.map": "/planlium/static/js/2.d5114b35.chunk.js.map",
+    "index.html": "/planlium/index.html",
+    "precache-manifest.8147626d6e93f400999dbbc86037dc36.js": "/planlium/precache-manifest.8147626d6e93f400999dbbc86037dc36.js",
+    "service-worker.js": "/planlium/service-worker.js",
+    "static/css/2.c3343ac3.chunk.css.map": "/planlium/static/css/2.c3343ac3.chunk.css.map",
+    "static/css/main.a0ad9ee4.chunk.css.map": "/planlium/static/css/main.a0ad9ee4.chunk.css.map",
+    "static/js/2.d5114b35.chunk.js.LICENSE.txt": "/planlium/static/js/2.d5114b35.chunk.js.LICENSE.txt"
+  },
+  "entrypoints": [
+    "static/js/runtime-main.964326c2.js",
+    "static/css/2.c3343ac3.chunk.css",
+    "static/js/2.d5114b35.chunk.js",
+    "static/css/main.a0ad9ee4.chunk.css",
+    "static/js/main.02d03bea.chunk.js"
+  ]
+}
