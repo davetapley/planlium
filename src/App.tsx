@@ -124,10 +124,17 @@ const HubList = ({
           <i className="fas fa-map-marker"></i>
         </Panel.Icon>
         {selectionState === "Editing" ? (
-          <NameInput
-            name={name}
-            setName={(name_) => setName(name, name_)}
-          ></NameInput>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              setSelectionState(name, "None");
+            }}
+          >
+            <NameInput
+              name={name}
+              setName={(name_) => setName(name, name_)}
+            ></NameInput>
+          </form>
         ) : (
           name
         )}
