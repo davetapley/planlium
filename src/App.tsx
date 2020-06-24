@@ -21,6 +21,8 @@ import {
   Subtitle,
 } from "trunx";
 
+import graphql from "babel-plugin-relay/macro";
+
 const perms = (n: number): number[][] => {
   const out: number[][] = [];
   for (var i = 0; i < n; i++) {
